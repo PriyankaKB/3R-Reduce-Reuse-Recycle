@@ -1,12 +1,12 @@
-# launch_waste_segrgation
+# launch_waste_segregation
 
-## Refer below codelabs for installation and process flow
+## Refer to the codelabs below for installation and process flow
 
 https://codelabs.developers.google.com/adk-mcp-bigquery-maps#0
 
 https://codelabs.developers.google.com/codelabs/production-ready-ai-with-gc/5-deploying-agents/deploy-an-adk-agent-to-cloud-run#0
 
-## Run the setup scripts in setup folder
+## Run the setup scripts in the setup folder
 
 1. Run the environment setup script. This script enables the BigQuery and Google Maps APIs, and creates a .env file with your Project ID and Maps API Key.
 
@@ -26,7 +26,7 @@ chmod +x ./setup/setup_bigquery.sh
 
 To build a new Google Kubernetes Engine (GKE) cluster and a container registry to push your Docker builds, it is important to note a key update regarding **`gcr.io` (Google Container Registry)**:
 
-As of **March 2025**, legacy Google Container Registry was fully shut down and no longer accepts writes. To use the `gcr.io` domain or to follow standard practices, you must utilize **Artifact Registry**, which is Google Cloud's modern successor. Artifact Registry offers full backwards compatibility for `gcr.io` paths if your existing automation requires it, or you can use the modern standard format (`*.pkg.dev`).
+As of **March 2025**, the legacy Google Container Registry was fully shut down and no longer accepts writes. To use the `gcr.io` domain or to follow standard practices, you must utilize **Artifact Registry**, which is Google Cloud's modern successor. Artifact Registry offers full backwards compatibility for `gcr.io` paths if your existing automation requires it, or you can use the modern standard format (`*.pkg.dev`).
 
 Below are the complete setup paths for both a modern registry and a backwards-compatible `gcr.io` repository setup alongside your new GKE cluster.
 
