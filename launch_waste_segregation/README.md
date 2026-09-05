@@ -6,6 +6,25 @@ https://codelabs.developers.google.com/adk-mcp-bigquery-maps#0
 
 https://codelabs.developers.google.com/codelabs/production-ready-ai-with-gc/5-deploying-agents/deploy-an-adk-agent-to-cloud-run#0
 
+## Clone the repository to your Cloud console - In this case, we are using GCP
+
+```
+git clone https://github.com/PriyankaKB/3R-Reduce-Reuse-Recycle.git
+```
+
+## Go to the project directory
+
+```
+cd 3R-Reduce-Reuse-Recycle/launch_waste_segregation
+```
+
+## Authenticate
+Run the following command to authenticate with your Google Cloud account. This is required for the ADK to access BigQuery.
+
+```
+gcloud auth application-default login
+```
+
 ## Run the setup scripts in the setup folder
 
 1. Run the environment setup script. This script enables the BigQuery and Google Maps APIs, and creates a .env file with your Project ID and Maps API Key.
