@@ -31,12 +31,12 @@ gcloud iam service-accounts add-iam-policy-binding project-3r-gke-sa@your-gcp-pr
 
 # 1. Grant permissions to submit builds
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-    --member="user:priyanka.b@stellarrimz.com" \
+    --member="user:<your_email>" \
     --role="roles/cloudbuild.builds.editor"
 
 # 2. Grant permissions to stage the source context in the Cloud Build default bucket
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
-    --member="user:priyanka.b@stellarrimz.com" \
+    --member="user:<your_email>" \
     --role="roles/storage.admin"
 ---
 
