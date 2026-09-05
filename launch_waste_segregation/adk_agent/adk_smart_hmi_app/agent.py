@@ -19,9 +19,22 @@ ROBOTIC_ARM_AGENT_URL = os.getenv("ROBOTIC_ARM_AGENT_URL", "http://adk-robotic-s
 DISPATCH_AGENT_URL = os.getenv("DISPATCH_AGENT_URL", "http://adk-dispatch-service:8083/process")
 
 app = FastAPI()
+
+# Allow these origins to access the API
+origins = [
+    "http://localhost", # Localhost for development
+    "https://localhost:3000", # Localhost for development
+    "http://127.0.0.1:3000", # Localhost for development
+    "https://console.cloud.google.com",   # Google Cloud Console
+    "http://adk-segregation-service:8080/process", # Segregation Service
+    "http://adk-robotic-service:8081/process", # Robotic Service
+    "http://adk-hmi-service:8082/process", # HMI Service
+    "http://adk-dispatch-service:8083/process", # Dispatch Service
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permits requests from any origin (ideal for testing)
+    allow_origins=origins,  # Permits requests from any origin (ideal for testing)
     allow_credentials=True,
     allow_methods=["*"],  # Permits all HTTP verbs (GET, POST, etc.)
     allow_headers=["*"],
