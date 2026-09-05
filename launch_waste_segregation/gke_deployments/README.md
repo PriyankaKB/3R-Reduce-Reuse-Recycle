@@ -78,9 +78,9 @@ You can grant the required permissions directly using Cloud Shell. Execute the f
 
 ```bash
 # Define project variables
-PROJECT_ID="my-gen-ai-sandbox-project1"
-SERVICE_ACCOUNT="659952133659-compute@developer.gserviceaccount.com"
-BUCKET_NAME="my-gen-ai-sandbox-project1_cloudbuild"
+PROJECT_ID="$PROJECT_ID"
+SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
+BUCKET_NAME="3r-autonoumous-waste-segregation-$PROJECT_ID"
 
 # Grant Storage Object Viewer permission on the specific bucket
 gcloud storage buckets add-iam-policy-binding gs://$BUCKET_NAME \
@@ -96,7 +96,7 @@ OR
 ```
 PROJECT_ID=$(gcloud config get-value project)
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-SA_NAME=lab2-cr-service
+SA_NAME=project-3r-service
 ```
 
 # 2. Create the .env file using those variables
@@ -125,7 +125,7 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 Once you apply the IAM bindings, wait about 10–15 seconds for the permissions to propagate globally, then re-run your build command:
 
 ```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/my-gen-ai-sandbox-project1/project-3r-repo/orchestrator:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID$/project-3r-repo/orchestrator:latest .
 
 ```
 
