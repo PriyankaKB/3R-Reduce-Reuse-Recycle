@@ -30,14 +30,21 @@ gcloud iam service-accounts add-iam-policy-binding project-3r-gke-sa@your-gcp-pr
 ## Consider below commands to handle permission related issues
 
 # 1. Grant permissions to submit builds
+
+```
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
     --member="user:<your_email>" \
     --role="roles/cloudbuild.builds.editor"
+```
 
 # 2. Grant permissions to stage the source context in the Cloud Build default bucket
+
+```
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
     --member="user:<your_email>" \
     --role="roles/storage.admin"
+```
+
 ---
 
 Note: Replace YOUR_PROJECT_ID with your real Google Cloud Project ID.
@@ -47,12 +54,18 @@ If your project is brand new, the Cloud Build Service Account itself might not h
 
 
 # Get your project number
+
+```
 PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format="value(projectNumber)")
+```
 
 # Grant the Cloud Build service account permission to push images into Artifact Registry
+
+```
 gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
     --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
     --role="roles/artifactregistry.writer"
+```
 
 ## For persistent errors consider below commands
 The error occurs because Cloud Build uses a service account to fetch your uploaded source code from the staging storage bucket (`gs://my-gen-ai-sandbox-project1_cloudbuild`), and that specific service account lacks permissions to read from the bucket.
@@ -79,11 +92,16 @@ gcloud storage buckets add-iam-policy-binding gs://$BUCKET_NAME \
 OR
 
 # 1. Set the variables in your terminal first
+
+```
 PROJECT_ID=$(gcloud config get-value project)
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
 SA_NAME=lab2-cr-service
+```
 
 # 2. Create the .env file using those variables
+
+```
 cat <<EOF > .env
 PROJECT_ID=$PROJECT_ID
 PROJECT_NUMBER=$PROJECT_NUMBER
@@ -91,6 +109,7 @@ SA_NAME=$SA_NAME
 SERVICE_ACCOUNT=${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
 MODEL="gemini-2.5-flash"
 EOF
+```
 
 ### Alternative / Best Practice Recommendation
 
