@@ -1,7 +1,7 @@
 import os
 import requests
 import dotenv
-from adk_segregation_app import tools
+from . import tools
 from typing import Literal
 from google import genai
 from pydantic import BaseModel, Field

@@ -1,7 +1,7 @@
 import os
 import dotenv
 import requests
-from adk_dispatch_app import tools
+from . import tools
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from google.adk.agents import LlmAgent
