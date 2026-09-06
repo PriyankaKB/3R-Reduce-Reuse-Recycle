@@ -11,6 +11,7 @@ from google.cloud import bigquery
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
+MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
 bq_client = bigquery.Client()
 
 # Internal GKE DNS URL for the Smart HMI Agent
@@ -61,7 +62,7 @@ bigquery_toolset = tools.get_bigquery_mcp_toolset()
 
 # 2. Configure the Dispatch Agent with its sub-agent hierarchy
 root_agent = LlmAgent(
-    model='gemini-2.5-flash',
+    model=MODEL,
     name='dispatch_agent',
     description="Commits analytical streaming log events to BigQuery storage.",
     instruction=f"""Generate string status payloads and trigger dispatch routing logs.

@@ -19,6 +19,7 @@ import pandas as pd
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'my-gen-ai-sandbox-project1')
+MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
 
 # Fetch downstream cluster internal CoreDNS URLs
 ROBOTIC_ARM_AGENT_URL = os.getenv("ROBOTIC_ARM_AGENT_URL", "http://adk-robotic-service:8081/process")
@@ -90,7 +91,7 @@ bigquery_toolset = tools.get_bigquery_mcp_toolset()
 
 # Instantiate Root Agent using Gemini backend
 root_agent = LlmAgent(
-    model='gemini-2.5-flash',
+    model=MODEL,
     name='segregation_agent',
     description="Classifies conveyor items via GCS URIs and dispatches work downstream.",
     instruction=f"""Analyze raw images from Cloud Storage buckets. Categorize items into exactly: PAPER, GLASS, FOAM, METAL, PLASTIC, TEXTILE.
@@ -142,7 +143,7 @@ async def process(request: Request):
             
             # Trigger context prediction using the defined ai_client and image_part
             response = ai_client.models.generate_content(
-                model='gemini-2.5-flash',
+                model=MODEL,
                 contents=[
                     image_part, 
                     "Identify the dominant category from the predefined classification types matching the grid system."

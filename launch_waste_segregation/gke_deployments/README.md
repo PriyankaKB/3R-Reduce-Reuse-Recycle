@@ -4,65 +4,138 @@ This approach completely removes the need for `project-3r-secrets` containing st
 
 Here is the fast-track conversion setup to switch to ADC:
 
+### Setup The Environment
+
+```
+gcloud auth list
+gcloud config get project
+gcloud auth application-default login
+```
+
+Refer below commands. The next part to these explains below commands.
+
+```
+PROJECT_ID=$(gcloud config get-value project)
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+SERVICE_ACCOUNT="$PROJECT_NUMBER-compute@developer.gserviceaccount.com"
+BUCKET_NAME="3r-autonoumous-waste-segregation-$PROJECT_ID"
+DOCKER_REPO="project-3r-repo"
+KSA_NAME="project-3r-gke-sa"
+K8S_NAMESPACE="default" # Change if using a custom namespace
+MODEL="gemini-2.5-flash"
+
+```
+#### Create the Environment File
+
+```
+cat <<EOF > .env
+PROJECT_ID=$PROJECT_ID
+PROJECT_NUMBER=$PROJECT_NUMBER
+DOCKER_REPO="project-3r-repo"
+KSA_NAME=$KSA_NAME
+K8S_NAMESPACE="default"
+SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+MODEL="gemini-2.5-flash"
+EOF
+```
+
 ### Step 1: Bind your GKE Service Account to GCP IAM Roles
+#### Get your project ID
+```
+PROJECT_ID=$(gcloud config get-value project)
+
+```
 
 Run these three quick `gcloud` commands in Cloud Shell to authorize your GKE pod natively via Workload Identity:
 
 ```bash
 # 1. Create a dedicated Google IAM Service Account (GSA)
-gcloud iam service-accounts create project-3r-gke-sa --display-name="Project 3R GKE Agent Service Account"
+gcloud iam service-accounts create $KSA_NAME --display-name="Project 3R GKE Agent Service Account"
 
 # 2. Grant it access to Vertex AI (Gemini), BigQuery, and GCS
-gcloud projects add-iam-policy-binding your-gcp-project-id \
-    --member="serviceAccount:project-3r-gke-sa@your-gcp-project-id.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$KSA_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/aiplatform.user"
 
-gcloud projects add-iam-policy-binding your-gcp-project-id \
-    --member="serviceAccount:project-3r-gke-sa@your-gcp-project-id.iam.gserviceaccount.com" \
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$KSA_NAME@$PROJECT_ID.iam.gserviceaccount.com" \
     --role="roles/bigquery.dataEditor"
 
-# 3. Allow your Kubernetes Service Account (KSA) to impersonate the GSA
-gcloud iam service-accounts add-iam-policy-binding project-3r-gke-sa@your-gcp-project-id.iam.gserviceaccount.com \
-    --role="roles/iam.workloadIdentityUser" \
-    --member="serviceAccount:your-gcp-project-id.svc.id.goog[default/project-3r-ksa]"
+# 3. Cloud Storage Access for the RAG bucket
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:${SERVICE_ACCOUNT}" \
+    --role="roles/storage.objectViewer"
 
+# 4. Allow your Kubernetes Service Account (KSA) to impersonate the GSA
+gcloud iam service-accounts add-iam-policy-binding $KSA_NAME@$PROJECT_ID.iam.gserviceaccount.com \
+    --role="roles/iam.workloadIdentityUser" \
+    --member="serviceAccount:$PROJECT_ID.svc.id.goog[default/$KSA_NAME]"
 ```
+
 ## Consider below commands to handle permission related issues
 
-# 1. Grant permissions to submit builds
+Refer Below Commands
+
+Setup your auth email
 
 ```
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+export USER_EMAIL="priyanka.b@stellarrimz.com"
+```
+## Grant User Permissions
+
+```
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="user:$USER_EMAIL" \
+    --role="roles/cloudbuild.builds.editor"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="user:$USER_EMAIL" \
+    --role="roles/storage.admin"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
+    --role="roles/artifactregistry.writer"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+    --member="serviceAccount:$SERVICE_ACCOUNT" \
+    --role="roles/cloudbuild.builds.builder"
+
+```
+
+## 1. Grant permissions to submit builds
+
+```
+gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="user:<your_email>" \
     --role="roles/cloudbuild.builds.editor"
 ```
 
-# 2. Grant permissions to stage the source context in the Cloud Build default bucket
+## 2. Grant permissions to stage the source context in the Cloud Build default bucket
 
 ```
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="user:<your_email>" \
     --role="roles/storage.admin"
 ```
 
 ---
 
-Note: Replace YOUR_PROJECT_ID with your real Google Cloud Project ID.
+Note: Replace $PROJECT_ID with your real Google Cloud Project ID - $PROJECT_ID.
 
 Verify Service Accounts (If you recently enabled Cloud Build)
 If your project is brand new, the Cloud Build Service Account itself might not have initialized its default bindings yet. Ensure the Cloud Build service account has permission to write to your Artifact Registry:
 
 
-# Get your project number
+## Get your project number
 
 ```
-PROJECT_NUMBER=$(gcloud projects describe YOUR_PROJECT_ID --format="value(projectNumber)")
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
 ```
 
-# Grant the Cloud Build service account permission to push images into Artifact Registry
+## Grant the Cloud Build service account permission to push images into Artifact Registry
 
 ```
-gcloud projects add-iam-policy-binding YOUR_PROJECT_ID \
+gcloud projects add-iam-policy-binding $PROJECT_ID \
     --member="serviceAccount:${PROJECT_NUMBER}@cloudbuild.gserviceaccount.com" \
     --role="roles/artifactregistry.writer"
 ```
@@ -93,10 +166,12 @@ OR
 
 # 1. Set the variables in your terminal first
 
+Note: Refer the Environment Setup at the start of this README.md
+
 ```
 PROJECT_ID=$(gcloud config get-value project)
 PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
-SA_NAME=project-3r-service
+KSA_NAME=project-3r-gke-sa
 ```
 
 # 2. Create the .env file using those variables
@@ -105,8 +180,8 @@ SA_NAME=project-3r-service
 cat <<EOF > .env
 PROJECT_ID=$PROJECT_ID
 PROJECT_NUMBER=$PROJECT_NUMBER
-SA_NAME=$SA_NAME
-SERVICE_ACCOUNT=${SA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+KSA_NAME=$KSA_NAME
+SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
 MODEL="gemini-2.5-flash"
 EOF
 ```
@@ -124,19 +199,14 @@ gcloud projects add-iam-policy-binding $PROJECT_ID \
 
 Once you apply the IAM bindings, wait about 10–15 seconds for the permissions to propagate globally, then re-run your build command:
 
+```
+export DOCKER_REPO="project-3r-repo"
+```
+
 ```bash
 gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID$/project-3r-repo/orchestrator:latest .
 
 ```
-
-
-### Step 2: The Security-Compliant YAML (`project-3r-adc.yaml`)
-
-This updated manifest provisions a Kubernetes Service Account (`project-3r-ksa`) linked natively to Google Cloud's ADC engine. It securely drops the raw `Secret` object completely:
-
-```yaml
----
-
 ## Enable necessary APIs
 
 # Ensure your project is set correctly
@@ -154,6 +224,88 @@ gcloud services enable apikeys.googleapis.com --project=$PROJECT_ID
 # Enable BigQuery and Location/Maps Platforms
 gcloud services enable bigquery.googleapis.com --project=$PROJECT_ID
 gcloud services enable mapstools.googleapis.com --project=$PROJECT_ID
+
+
+### Step 2: Build and Tag your Docker images to push to docker repository
+
+Based on your architecture and the target corporate Artifact Registry layout (`us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/`), you can use Google Cloud Build to compile and push your containers securely via Cloud Shell.
+
+For each application, navigate to its corresponding directory in Cloud Shell and run the respective `gcloud builds submit` command (ensuring the trailing `.` is included to pass the current directory context):
+
+#### Refer and execute Below commands from respective project/agent directories
+
+```
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/segregation-agent:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/robotic-arm-agent:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/smart-hmi-agent:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/dispatch-agent:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/orchestrator-agent:latest .
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/react-frontend-ui:latest .
+```
+
+#### Commnad Details
+
+#### 1. Segregation Agent
+
+* **Directory:** `adk_segregation_app/`
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/segregation-agent:latest .
+
+```
+
+#### 2. Robotic Arm Agent
+
+* **Directory:** `adk_robotic_arm_app/`
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/robotic-arm-agent:latest .
+
+```
+
+#### 3. Smart HMI Agent
+
+* **Directory:** `adk_smart_hmi_app/`
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/smart-hmi-agent:latest .
+
+```
+
+#### 4. Dispatch Agent
+
+* **Directory:** `adk_dispatch_app/`
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/dispatch-agent:latest .
+
+```
+
+#### 5. Orchestrator Agent
+
+* **Directory:** `adk_orchestrator_app/`
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/orchestrator-agent:latest .
+
+```
+
+#### 6. React Frontend UI
+
+If your project uses a custom Dockerfile configuration name (such as `frontend.Dockerfile`) inside your React root directory, explicitly point Cloud Build to it using the `--config` flag:
+
+* **Directory:** Your React project root directory
+* **Command:**
+```bash
+gcloud builds submit --tag us-central1-docker.pkg.dev/$PROJECT_ID/$DOCKER_REPO/react-frontend-ui:latest .
+
+```
+
+### Step 2: The Security-Compliant YAML (`project-3r-adc.yaml`)
+
+This updated manifest provisions a Kubernetes Service Account (`project-3r-ksa`) linked natively to Google Cloud's ADC engine. It securely drops the raw `Secret` object completely:
+
+```yaml
 # ==============================================================================
 # KUBERNETES SERVICE ACCOUNT (WORKLOAD IDENTITY / ADC LINK)
 # ==============================================================================
@@ -403,76 +555,7 @@ print(response.text)
 Apply this manifest using `kubectl apply -f project-3r-adc.yaml`. Your cluster is now fully compliant with your team's keyless security configuration.
 
 
-### Step 3
-Based on your architecture and the target corporate Artifact Registry layout (`us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/`), you can use Google Cloud Build to compile and push your containers securely via Cloud Shell.
 
-For each application, navigate to its corresponding directory in Cloud Shell and run the respective `gcloud builds submit` command (ensuring the trailing `.` is included to pass the current directory context):
-
-### 1. Segregation Agent
-
-* **Directory:** `adk_segregation_app/`
-* **Command:**
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/segregation-agent:latest .
-
-```
-
-
-
-### 2. Robotic Arm Agent
-
-* **Directory:** `adk_robotic_arm_app/`
-* **Command:**
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/robotic-arm-agent:latest .
-
-```
-
-
-
-### 3. Smart HMI Agent
-
-* **Directory:** `adk_smart_hmi_app/`
-* **Command:**
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/smart-hmi-agent:latest .
-
-```
-
-
-
-### 4. Dispatch Agent
-
-* **Directory:** `adk_dispatch_app/`
-* **Command:**
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/dispatch-agent:latest .
-
-```
-
-
-
-### 5. Orchestrator Agent
-
-* **Directory:** `adk_orchestrator_app/`
-* **Command:**
-```bash
-gcloud builds submit --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/orchestrator-agent:latest .
-
-```
-
-
-
-### 6. React Frontend UI
-
-If your project uses a custom Dockerfile configuration name (such as `frontend.Dockerfile`) inside your React root directory, explicitly point Cloud Build to it using the `--config` flag:
-
-* **Directory:** Your React project root directory
-* **Command:**
-```bash
-gcloud builds submit --config frontend.Dockerfile --tag us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/react-frontend-ui:latest .
-
-```
 
 
 

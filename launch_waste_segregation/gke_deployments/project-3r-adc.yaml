@@ -4,7 +4,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: project-3r-ksa
+  name: project-3r-gke-sa
   namespace: default
   annotations:
     # This annotation maps your pod directly to the secure GCP IAM Service account

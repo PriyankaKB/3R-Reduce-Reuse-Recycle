@@ -1,10 +1,18 @@
 # launch_waste_segregation
 
+## Setup the Environment
+```
+gcloud auth list
+gcloud config get project
+gcloud auth application-default login
+```
+
 ## Refer to the codelabs below for installation and process flow
 
 https://codelabs.developers.google.com/adk-mcp-bigquery-maps#0
 
 https://codelabs.developers.google.com/codelabs/production-ready-ai-with-gc/5-deploying-agents/deploy-an-adk-agent-to-cloud-run#0
+
 
 ## Clone the repository to your Cloud console - In this case, we are using GCP
 
@@ -41,7 +49,41 @@ chmod +x ./setup/setup_bigquery.sh
 ./setup/setup_bigquery.sh
 ```
 
-# Deploying on GKE
+## Install ADK
+
+Now that the infrastructure is ready, let's create a virtual Python environment and install the required packages for ADK.
+
+Create a virtual environment:
+
+```
+python3 -m venv .venv
+```
+
+Activate the virtual environment:
+
+```
+source .venv/bin/activate
+```
+
+Install the ADK:
+
+```
+pip install "google-adk[mcp]"
+```
+
+Navigate to the agent directory:
+
+```
+cd adk_agent/
+```
+
+#### Running and testing ADK agent
+
+```
+adk web --allow_origins 'regex:https://.*\.cloudshell\.dev'
+```
+
+## Deploying on GKE
 
 To build a new Google Kubernetes Engine (GKE) cluster and a container registry to push your Docker builds, it is important to note a key update regarding **`gcr.io` (Google Container Registry)**:
 

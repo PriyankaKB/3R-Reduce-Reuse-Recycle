@@ -12,6 +12,7 @@ from datetime import datetime
 dotenv.load_dotenv()
 
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
+MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
 
 # Endpoints mapping across the GKE internal DNS service topology
 SEGREGATION_AGENT_URL = os.getenv("SEGREGATION_AGENT_URL", "http://adk-segregation-service:8080/process")
@@ -101,7 +102,7 @@ bigquery_toolset = tools.get_bigquery_mcp_toolset()
 # --- 3. Define Orchestrated Smart HMI LlmAgent Instance ---
 
 root_agent = LlmAgent(
-    model='gemini-2.5-flash',
+    model=MODEL,
     name='smart_hmi_agent',
     description="Formats user telemetry alerts and orchestrates verification between upstream/downstream nodes.",
     instruction=f"""Generate string status payloads and trigger dispatch routing logs.

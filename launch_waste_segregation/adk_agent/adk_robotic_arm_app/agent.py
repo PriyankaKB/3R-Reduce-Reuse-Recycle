@@ -10,6 +10,7 @@ from a2a.types import Message, AgentCard
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
+MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
 
 # Internal GKE DNS URLs for pipeline orchestration
 HMI_AGENT_URL = os.getenv("HMI_AGENT_URL", "http://adk-hmi-service:8082/process")
@@ -78,7 +79,7 @@ bigquery_toolset = tools.get_bigquery_mcp_toolset()
 
 # 3. Define the Robot Agent itself
 root_agent = LlmAgent(
-    model='gemini-2.5-flash',
+    model=MODEL,
     name='robotic_arm_agent',
     description="Calculates conveyor sort locations and physics trajectory coordinates.",
     instruction=f"""
