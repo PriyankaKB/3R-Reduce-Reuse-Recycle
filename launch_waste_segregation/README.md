@@ -1,4 +1,4 @@
-# launch_waste_segregation
+# launch_waste_segregation 
 
 ## Setup the Environment
 ```
@@ -26,7 +26,7 @@ git clone https://github.com/PriyankaKB/3R-Reduce-Reuse-Recycle.git
 cd 3R-Reduce-Reuse-Recycle/launch_waste_segregation
 ```
 
-## Authenticate
+## Authenticate your account
 Run the following command to authenticate with your Google Cloud account. This is required for the ADK to access BigQuery.
 
 ```
