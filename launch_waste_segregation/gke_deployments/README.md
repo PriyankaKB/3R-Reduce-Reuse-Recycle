@@ -1,10 +1,12 @@
+# Cloud Deployment - GKE
+
 To comply with your security policy banning raw API keys, you should shift authentication to **Application Default Credentials (ADC)** via **GKE Workload Identity Federation** (formerly Workload Identity).
 
 This approach completely removes the need for `project-3r-secrets` containing strings like `GEMINI_API_KEY`. Instead, your Segregation Agent container automatically inherits credentials implicitly via the Google SDK when initialized.
 
 Here is the fast-track conversion setup to switch to ADC:
 
-### Setup The Environment
+### Set up the Environment
 
 ```
 gcloud auth list
@@ -12,7 +14,7 @@ gcloud config get project
 gcloud auth application-default login
 ```
 
-Refer below commands. The next part to these explains below commands.
+Refer to the commands below. The next part explains these commands.
 
 ```
 PROJECT_ID=$(gcloud config get-value project)
@@ -72,14 +74,14 @@ gcloud iam service-accounts add-iam-policy-binding $KSA_NAME@$PROJECT_ID.iam.gse
     --member="serviceAccount:$PROJECT_ID.svc.id.goog[default/$KSA_NAME]"
 ```
 
-## Consider below commands to handle permission related issues
+## Consider the commands below to handle permission-related issues
 
-Refer Below Commands
+Refer to the commands below
 
-Setup your auth email
+Set up your auth email
 
 ```
-export USER_EMAIL="priyanka.b@stellarrimz.com"
+export USER_EMAIL="<your_auth_email>"
 ```
 ## Grant User Permissions
 
