@@ -6,8 +6,7 @@ requests>=2.31.0
 google-genai>=0.1.1
 google-cloud-aiplatform>=1.44.0
 google-adk>=0.1.0
-mcp==1.1.2
-
+mcp
 
 # NVIDIA GPU Accelerated pandas Layer (CUDA 12 compatible)
 cudf-cu12>=24.2.0

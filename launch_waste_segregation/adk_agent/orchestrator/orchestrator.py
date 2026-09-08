@@ -2,7 +2,7 @@ import os
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from google.adk import Agent, Workflow, Edge
+from google.adk import Agent, Workflow
 
 app = FastAPI(title="GKE Cloud-Native Multi-Agent Orchestrator")
 
@@ -43,13 +43,27 @@ def run_dispatch_step(state: dict) -> dict:
 workflow_graph = Workflow(
     name="project_3r_waste_segregation_pipeline",
     edges=[
-        Edge(source="START", target=run_segregation_step),
-        Edge(source=run_segregation_step, target=run_robotic_step),
-        Edge(source=run_robotic_step, target=run_hmi_step),
-        Edge(source=run_hmi_step, target=run_dispatch_step),
-        Edge(source=run_dispatch_step, target="END")
+        {"source": "START", "target": run_segregation_step},
+        {"source": run_segregation_step, "target": run_robotic_step},
+        {"source": run_robotic_step, "target": run_hmi_step},
+        {"source": run_hmi_step, "target": run_dispatch_step},
+        {"source": run_dispatch_step, "target": "END"}
     ]
 )
+
+workflow_graph = Workflow(
+    ...
+    edges=[
+        # ... your other valid edges ...
+        
+        # Change the tuple that was causing the error to a dictionary:
+        {
+            "source": run_dispatch_s...,  # Replace with your actual function name
+            "target": "END"
+        }
+    ]
+)
+
 
 @app.post("/v1/pipeline/sort")
 async def trigger_conveyor_sorting_loop(payload: WasteStreamPayload):
