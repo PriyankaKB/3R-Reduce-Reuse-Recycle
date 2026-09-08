@@ -2,7 +2,7 @@ import os
 import requests
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from google.adk import Agent, Workflow
+from google.adk import Agent, Workflow, Edge
 
 app = FastAPI(title="GKE Cloud-Native Multi-Agent Orchestrator")
 
@@ -43,11 +43,11 @@ def run_dispatch_step(state: dict) -> dict:
 workflow_graph = Workflow(
     name="project_3r_waste_segregation_pipeline",
     edges=[
-        ("START", run_segregation_step),
-        (run_segregation_step, run_robotic_step),
-        (run_robotic_step, run_hmi_step),
-        (run_hmi_step, run_dispatch_step),
-        (run_dispatch_step, "END")
+        Edge(source="START", target=run_segregation_step),
+        Edge(source=run_segregation_step, target=run_robotic_step),
+        Edge(source=run_robotic_step, target=run_hmi_step),
+        Edge(source=run_hmi_step, target=run_dispatch_step),
+        Edge(source=run_dispatch_step, target="END")
     ]
 )
 
