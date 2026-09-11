@@ -1,14 +1,17 @@
 # ==============================================================================
 # KUBERNETES SERVICE ACCOUNT (WORKLOAD IDENTITY / ADC LINK)
 # ==============================================================================
+
+# serviceAccountName: project-3r-gke-sa is configured under spec.template.spec.
+# GOOGLE_GENAI_USE_VERTEXAI is set to "True" along with GOOGLE_CLOUD_PROJECT so the SDK automatically uses Vertex AI via ADC.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: project-3r-gke-sa
   namespace: default
   annotations:
-    # This annotation maps your pod directly to the secure GCP IAM Service account
-    iam.gke.io/gcp-service-account: "project-3r-gke-sa@your-gcp-project-id.iam.gserviceaccount.com"
+    iam.gke.io/gcp-service-account: "project-3r-gke-sa@<your_cloud_project_name>.iam.gserviceaccount.com"
+  
 ---
 # ==============================================================================
 # CONFIGMAP (Environment Targets Only)
@@ -31,10 +34,14 @@ data:
 # ==============================================================================
 # 1. SEGREGATION AGENT (Port 8080 - GPU Node / Native ADC Engine)
 # ==============================================================================
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: segregation-agent
+  namespace: default
+  labels:
+    app.kubernetes.io/name: segregation-agent
 spec:
   replicas: 1
   selector:
@@ -45,25 +52,36 @@ spec:
       labels:
         app: segregation-agent
     spec:
-      serviceAccountName: project-3r-ksa # Instructs pod to assume Workload Identity metadata
+      serviceAccountName: project-3r-gke-sa
       nodeSelector:
-        cloud.google.com/gke-nodepool: gpu-node-pool # Explicitly pin heavy RAPIDS layers to GPU node pool
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: agent
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/segregation-agent:latest
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/segregation-agent:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
         - containerPort: 8080
-        envFrom:
-        - configMapRef:
-            name: project-3r-config
+          name: http
         resources:
           requests:
-            memory: "1Gi"
             cpu: "500m"
+            memory: "512Mi"
           limits:
-            memory: "2Gi"
             cpu: "1000m"
+            memory: "1Gi"
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -84,6 +102,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: robotic-arm-agent
+  namespace: default
+  labels:
+    app.kubernetes.io/name: robotic-arm-agent
 spec:
   replicas: 1
   selector:
@@ -94,20 +115,36 @@ spec:
       labels:
         app: robotic-arm-agent
     spec:
-      serviceAccountName: project-3r-ksa
+      serviceAccountName: project-3r-gke-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: agent
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/robotic-arm-agent:latest
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/robotic-arm-agent:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
         - containerPort: 8081
-        envFrom:
-        - configMapRef:
-            name: project-3r-config
+          name: http
         resources:
           requests:
+            cpu: "500m"
             memory: "512Mi"
-            cpu: "250m"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -128,6 +165,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: smart-hmi-agent
+  namespace: default
+  labels:
+    app.kubernetes.io/name: smart-hmi-agent
 spec:
   replicas: 1
   selector:
@@ -138,20 +178,36 @@ spec:
       labels:
         app: smart-hmi-agent
     spec:
-      serviceAccountName: project-3r-ksa
+      serviceAccountName: project-3r-gke-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: agent
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/smart-hmi-agent:latest
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/smart-hmi-agent:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
         - containerPort: 8082
-        envFrom:
-        - configMapRef:
-            name: project-3r-config
+          name: http
         resources:
           requests:
+            cpu: "500m"
             memory: "512Mi"
-            cpu: "250m"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -172,6 +228,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: review-dispatch-agent
+  namespace: default
+  labels:
+    app.kubernetes.io/name: review-dispatch-agent
 spec:
   replicas: 1
   selector:
@@ -182,20 +241,36 @@ spec:
       labels:
         app: review-dispatch-agent
     spec:
-      serviceAccountName: project-3r-ksa
+      serviceAccountName: project-3r-gke-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: agent
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/review-dispatch-agent:latest
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/dispatch-agent:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
         - containerPort: 8083
-        envFrom:
-        - configMapRef:
-            name: project-3r-config
+          name: http
         resources:
           requests:
+            cpu: "500m"
             memory: "512Mi"
-            cpu: "250m"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -215,9 +290,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: adk-orchestrator-deployment
+  name: adk-orchestrator
+  namespace: default
   labels:
-    app: adk-orchestrator
+    app.kubernetes.io/name: adk-orchestrator
 spec:
   replicas: 1
   selector:
@@ -228,26 +304,48 @@ spec:
       labels:
         app: adk-orchestrator
     spec:
+      serviceAccountName: project-3r-gke-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: orchestrator
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/adk-orchestrator:latest
-        ports:
-        - containerPort: 8084
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/orchestrator-agent:latest
+        imagePullPolicy: Always
         env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         - name: SEGREGATION_AGENT_URL
           value: "http://adk-segregation-service:8080/process"
+        ports:
+        - containerPort: 8084
+          name: http
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
   name: adk-orchestrator-service
 spec:
-  type: ClusterIP  # Kept private inside the GKE network
+  type: ClusterIP
   selector:
     app: adk-orchestrator
   ports:
-  - protocol: TCP
-    port: 8084
+  - port: 8084
     targetPort: 8084
 
 ---
@@ -257,9 +355,10 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: adk-frontend-deployment
+  name: adk-frontend
+  namespace: default
   labels:
-    app: adk-frontend
+    app.kubernetes.io/name: adk-frontend
 spec:
   replicas: 1
   selector:
@@ -270,12 +369,31 @@ spec:
       labels:
         app: adk-frontend
     spec:
+      serviceAccountName: project-3r-gke-sa
+      nodeSelector:
+        iam.gke.io/gke-metadata-server-enabled: "true" # Required for GKE Standard (omit for Autopilot)
       containers:
       - name: frontend
-        image: us-central1-docker.pkg.dev/your-gcp-project-id/my-docker-repo/adk-frontend:latest
+        image: <your_cloud_project_location>-docker.pkg.dev/<your_cloud_project_name>/project-3r-repo/react-frontend-ui:latest
+        imagePullPolicy: Always
+        env:
+        - name: GOOGLE_CLOUD_PROJECT
+          value: "<your_cloud_project_name>"
+        - name: GOOGLE_CLOUD_LOCATION
+          value: "<your_cloud_project_location>"
+        - name: GOOGLE_GENAI_USE_VERTEXAI
+          value: "True"
+        - name: GEMINI_MODEL
+          value: "gemini-2.5-flash"
+        - name: GCS_BUCKET
+          value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
+        - name: SEGREGATION_AGENT_URL
+          value: "http://adk-segregation-service:8080/process"
         ports:
         - containerPort: 3000
+
 ---
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -285,6 +403,5 @@ spec:
   selector:
     app: adk-frontend
   ports:
-  - protocol: TCP
-    port: 3000
+  - port: 3000
     targetPort: 80
