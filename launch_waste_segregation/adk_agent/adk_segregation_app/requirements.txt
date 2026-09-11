@@ -13,10 +13,10 @@ transformers
 # Google Packages
 
 # Google Agent Development Kit
-google-adk-python==2.9.0
+google-adk==2.9.0
 
 # Model Context Protocol SDK (correct package name, not "mcp")
-model-context-protocol==2.*
+model-context-protocol
 
 # Google Cloud BigQuery Streaming client SDK
 google-cloud-bigquery>=3.18.0
