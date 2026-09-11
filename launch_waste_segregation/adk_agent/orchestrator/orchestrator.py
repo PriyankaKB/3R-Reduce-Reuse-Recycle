@@ -41,17 +41,17 @@ def run_dispatch_step(state: dict) -> dict:
 
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
+# Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
 workflow_graph = Workflow(
     name="project_3r_waste_segregation_pipeline",
     edges=[
-        {"from_node": "START", "to_node": run_segregation_step},
-        {"from_node": run_segregation_step, "to_node": run_robotic_step},
-        {"from_node": run_robotic_step, "to_node": run_hmi_step},
-        {"from_node": run_hmi_step, "to_node": run_dispatch_step},
-        {"from_node": run_dispatch_step, "to_node": "END"}
+        ("START", run_segregation_step),
+        (run_segregation_step, run_robotic_step),
+        (run_robotic_step, run_hmi_step),
+        (run_hmi_step, run_dispatch_step),
+        (run_dispatch_step, "END")
     ]
 )
-
 
 
 @app.post("/v1/pipeline/sort")
