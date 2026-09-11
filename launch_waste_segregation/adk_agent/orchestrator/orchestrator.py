@@ -42,14 +42,15 @@ def run_dispatch_step(state: dict) -> dict:
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
+# Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
 workflow_graph = Workflow(
     name="project_3r_waste_segregation_pipeline",
     edges=[
         ("START", run_segregation_step),
         (run_segregation_step, run_robotic_step),
         (run_robotic_step, run_hmi_step),
-        (run_hmi_step, run_dispatch_step),
-        (run_dispatch_step, "END")
+        (run_hmi_step, run_dispatch_step)
+        # No transition to "END" is needed; the workflow naturally terminates after run_dispatch_step
     ]
 )
 
