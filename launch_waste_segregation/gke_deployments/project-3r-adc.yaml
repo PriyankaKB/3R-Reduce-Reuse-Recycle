@@ -21,8 +21,8 @@ kind: ConfigMap
 metadata:
   name: project-3r-config
 data:
-  GCP_PROJECT_ID: "your-gcp-project-id"
-  GCS_WASTE_BUCKET: "your-3r-waste-bucket"
+  GCP_PROJECT_ID: "<your-cloud-project-id>"
+  GCS_WASTE_BUCKET: "<your-3r-waste-bucket>"
   BQ_DATASET: "waste_segregation_3r"
   BQ_TELEMETRY_TABLE: "gke_segregation_telemetry"
   SEGREGATION_AGENT_URL: "http://adk-segregation-service:8080/process"
@@ -85,7 +85,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: segregation-service
+  name: adk-segregation-service
 spec:
   type: ClusterIP
   selector:
@@ -148,7 +148,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: robotic-arm-service
+  name: adk-robotic-service
 spec:
   type: ClusterIP
   selector:
@@ -211,7 +211,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: smart-hmi-service
+  name: adk-hmi-service
 spec:
   type: ClusterIP
   selector:
@@ -274,7 +274,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: review-dispatch-service
+  name: adk-dispatch-service
 spec:
   type: ClusterIP
   selector:
