@@ -3,17 +3,29 @@ uvicorn>=0.28.0
 pydantic>=2.6.0
 python-dotenv>=1.0.1
 requests>=2.31.0
-mcp
-
-# Google Cloud BigQuery Streaming client SDK
-google-cloud-bigquery>=3.18.0
-
 pandas
 numpy
-google-adk>=0.1.0
-a2a-sdk==0.3.26
-google-genai>=0.1.1
 datasets
 nltk
 spacy
 transformers
+
+# Google Packages
+
+# Google Agent Development Kit
+google-adk-python==2.9.0
+
+# Model Context Protocol SDK (correct package name, not "mcp")
+model-context-protocol==2.*
+
+# Google Cloud BigQuery Streaming client SDK
+google-cloud-bigquery>=3.18.0
+
+# Google Cloud AI Platform SDK
+google-cloud-aiplatform>=1.44.0
+
+# Google Agent-to-Agent SDK
+a2a-sdk==0.3.26
+
+# Google GenAI SDK
+google-genai>=0.1.1
