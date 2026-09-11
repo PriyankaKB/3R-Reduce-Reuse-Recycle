@@ -51,19 +51,6 @@ workflow_graph = Workflow(
     ]
 )
 
-workflow_graph = Workflow(
-    ...
-    edges=[
-        # ... your other valid edges ...
-        
-        # Change the tuple that was causing the error to a dictionary:
-        {
-            "source": run_dispatch_s...,  # Replace with your actual function name
-            "target": "END"
-        }
-    ]
-)
-
 
 @app.post("/v1/pipeline/sort")
 async def trigger_conveyor_sorting_loop(payload: WasteStreamPayload):
