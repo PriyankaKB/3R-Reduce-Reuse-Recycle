@@ -5,9 +5,9 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-# Set environment variables for the React application
-ARG REACT_APP_ORCHESTRATOR_URL
-ENV REACT_APP_ORCHESTRATOR_URL=$REACT_APP_ORCHESTRATOR_URL
+# # Set environment variables for the React application
+# ARG REACT_APP_ORCHESTRATOR_URL
+# ENV REACT_APP_ORCHESTRATOR_URL=$REACT_APP_ORCHESTRATOR_URL
 
 RUN npm run build
 
