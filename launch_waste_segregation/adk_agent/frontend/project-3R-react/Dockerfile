@@ -4,6 +4,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+
+# Set environment variables for the React application
+ARG REACT_APP_ORCHESTRATOR_URL
+ENV REACT_APP_ORCHESTRATOR_URL=$REACT_APP_ORCHESTRATOR_URL
+
 RUN npm run build
 
 # Stage 2: Serve using an ultra-lightweight Nginx server

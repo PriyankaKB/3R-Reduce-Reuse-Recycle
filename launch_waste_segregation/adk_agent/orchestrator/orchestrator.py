@@ -1,10 +1,41 @@
 import os
 import requests
+import dotenv
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from google.adk import Agent, Workflow
 
+# Load environment variables from .env file
+dotenv.load_dotenv()
+
 app = FastAPI(title="GKE Cloud-Native Multi-Agent Orchestrator")
+
+# Allow these origins to access the API
+origins = [
+    "http://localhost", # Localhost for development
+    "https://localhost:3000", # Localhost for development
+    "http://127.0.0.1:3000", # Localhost for development
+    "https://console.cloud.google.com",   # Google Cloud Console
+    "http://adk-segregation-service:8080/process", # Segregation Service
+    "http://adk-robotic-service:8081/process", # Robotic Service
+    "http://adk-hmi-service:8082/process", # HMI Service
+    "http://adk-dispatch-service:8083/process", # Dispatch Service
+]
+
+# Dynamically add the FRONTEND_URL environment variable if it exists
+frontend_url = os.getenv("FRONTEND_URL")
+if frontend_url:
+    # Handles both a single URL or comma-separated URLs
+    for url in frontend_url.split(","):
+        origins.append(url.strip())
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Permits requests from any origin (ideal for testing)
+    allow_credentials=True,
+    allow_methods=["*"],  # Permits all HTTP verbs (GET, POST, etc.)
+    allow_headers=["*"],
+)
 
 # Define our highly scalable validation state shared between GKE services
 class WasteStreamPayload(BaseModel):
