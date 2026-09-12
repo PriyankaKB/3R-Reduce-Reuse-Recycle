@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.adk import Agent, Workflow
 from google.adk import Runner
-from google.adk.session import InMemorySessionService
+from google.adk.sessions import InMemorySessionService
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
