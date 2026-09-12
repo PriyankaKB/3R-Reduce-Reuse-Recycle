@@ -89,11 +89,24 @@ workflow_graph = Workflow(
 # Add this compatibility route right above your existing /v1/pipeline/sort handler:
 @app.post("/adk_segregation_app/run")
 @app.post("/v1/pipeline/sort")
-async def trigger_conveyor_sorting_loop(payload: WasteStreamPayload):
+# This route will now handle both the new and old endpoints, ensuring backward compatibility.
+async def trigger_conveyor_sorting_loop(payload: dict): 
     try:
-        # Convert Pydantic payload to clean state dict maps for ADK execution loops
-        initial_state = payload.model_dump()
+        # Since 'payload' is already a standard Python dictionary,
+        # we can use it directly as our initial state!
+        initial_state = payload
+        
+        # If the workflow expects specific default keys that are missing from the frontend, 
+        # you can set them here:
+        if "material" not in initial_state and "input" in initial_state:
+            initial_state["material"] = initial_state["input"]
+        
+        # Run the workflow with the clean state dictionary
         final_state = workflow_graph.run(initial_state)
         return final_state
+        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Conveyor pipeline workflow error: {str(e)}")
+        raise HTTPException(
+            status_code=500, 
+            detail=f"Conveyor pipeline workflow error: {str(e)}"
+        )
