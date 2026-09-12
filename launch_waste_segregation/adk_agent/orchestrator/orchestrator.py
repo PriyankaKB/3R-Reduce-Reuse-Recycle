@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.adk import Agent, Workflow
-from ggogle.adk import SessionService, Runner
+from google.adk import SessionService, Runner
 from google.adk.session import InMemorySessionService
 
 # Load environment variables from .env file
