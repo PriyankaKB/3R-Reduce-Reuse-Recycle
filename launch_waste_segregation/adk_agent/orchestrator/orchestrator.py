@@ -86,7 +86,8 @@ workflow_graph = Workflow(
     ]
 )
 
-
+# Add this compatibility route right above your existing /v1/pipeline/sort handler:
+@app.post("/adk_segregation_app/run")
 @app.post("/v1/pipeline/sort")
 async def trigger_conveyor_sorting_loop(payload: WasteStreamPayload):
     try:
