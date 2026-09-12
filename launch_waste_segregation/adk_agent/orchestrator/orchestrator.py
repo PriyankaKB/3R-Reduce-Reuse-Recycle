@@ -76,7 +76,7 @@ def run_dispatch_step(state: dict) -> dict:
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
 # Construct the Sequential Multi-Agent Workflow Engine Graph using ADK (CORRECTED)
 workflow_graph = Workflow(
-    name="project_3r_waste_segregation_pipeline",
+    name="adk_segregation_app",
     edges=[
         ("START", run_segregation_step),
         (run_segregation_step, run_robotic_step),
