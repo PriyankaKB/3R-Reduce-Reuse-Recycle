@@ -5,6 +5,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from google.adk import Agent, Workflow
+from ggogle.adk import SessionService, Runner
+from google.adk.session import InMemorySessionService
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
@@ -86,24 +88,45 @@ workflow_graph = Workflow(
     ]
 )
 
-# Add this compatibility route right above your existing /v1/pipeline/sort handler:
+# 1. Initialize the ADK 2 Session Service and Runner using "adk_segregation_app"
+session_service = InMemorySessionService()
+runner = Runner(
+    agent=workflow_graph,
+    app_name="adk_segregation_app", # <-- Updated to match your workflow name
+    session_service=session_service,
+)
+
+# 2. Update your FastAPI POST endpoint to use the correct app_name
 @app.post("/adk_segregation_app/run")
 @app.post("/v1/pipeline/sort")
-# This route will now handle both the new and old endpoints, ensuring backward compatibility.
-async def trigger_conveyor_sorting_loop(payload: dict): 
+async def trigger_conveyor_sorting_loop(payload: dict):
     try:
-        # Since 'payload' is already a standard Python dictionary,
-        # we can use it directly as our initial state!
-        initial_state = payload
+        session_id = "temp_session"
+        user_id = "user_1"
         
-        # If the workflow expects specific default keys that are missing from the frontend, 
-        # you can set them here:
-        if "material" not in initial_state and "input" in initial_state:
-            initial_state["material"] = initial_state["input"]
+        # Create a session using "adk_segregation_app"
+        await session_service.create_session(
+            app_name="adk_segregation_app", # <-- Updated
+            user_id=user_id,
+            session_id=session_id,
+            state=payload
+        )
         
-        # Run the workflow with the clean state dictionary
-        final_state = workflow_graph.run(initial_state)
-        return final_state
+        # Execute the workflow
+        async for event in runner.run_async(
+            user_id=user_id,
+            session_id=session_id
+        ):
+            pass
+            
+        # Retrieve the final mutated state from the session
+        session = await session_service.get_session(
+            app_name="adk_segregation_app", # <-- Updated
+            user_id=user_id,
+            session_id=session_id
+        )
+        
+        return session.state
         
     except Exception as e:
         raise HTTPException(
