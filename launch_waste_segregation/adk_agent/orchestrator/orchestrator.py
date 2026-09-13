@@ -1,6 +1,7 @@
 import os
 import requests
 import dotenv
+import uuid
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -101,7 +102,7 @@ runner = Runner(
 @app.post("/v1/pipeline/sort")
 async def trigger_conveyor_sorting_loop(payload: dict):
     try:
-        session_id = "temp_session_id"  # You can generate a unique session ID if needed
+        session_id = str(uuid.uuid4())  # Generate a unique session ID
         user_id = "user_1"
         
         # Create a session using "adk_segregation_app"
