@@ -2,6 +2,7 @@ import os
 import requests
 import dotenv
 import uuid
+import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -11,6 +12,13 @@ from google.adk.sessions import InMemorySessionService
 
 # Load environment variables from .env file
 dotenv.load_dotenv()
+
+# Configure logger once at app startup
+logging.basicConfig(
+    level=logging.INFO,  # or DEBUG for more detail
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
+)
+logger = logging.getLogger("conveyor")
 
 app = FastAPI(title="GKE Cloud-Native Multi-Agent Orchestrator")
 
@@ -104,13 +112,16 @@ async def trigger_conveyor_sorting_loop(payload: dict):
     try:
         session_id = str(uuid.uuid4())  # Generate a unique session ID
         user_id = "user_1"
+
+        validated = WasteStreamPayload(**payload)
+        logger.info("Received payload: %s", validated.dict())
         
         # Create a session using "adk_segregation_app"
         await session_service.create_session(
             app_name="adk_segregation_app", # <-- Updated
             user_id=user_id,
             session_id=session_id,
-            state=payload
+            state=validated.dict()
         )
         
         # Execute the workflow
@@ -126,8 +137,8 @@ async def trigger_conveyor_sorting_loop(payload: dict):
             user_id=user_id,
             session_id=session_id
         )
-        
-        return session.state
+        return {"status": "ok", "payload": session.state}
+    
         
     except Exception as e:
         raise HTTPException(
