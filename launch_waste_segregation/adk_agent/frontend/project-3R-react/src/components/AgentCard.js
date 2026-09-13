@@ -6,7 +6,7 @@ export default function AgentCard({ agent }) {
   const [response, setResponse] = useState(null);
 
   const handleClick = async () => {
-    const result = await callAgent(agent, "run", { state: "Test request" });
+    const result = await callAgent(agent, "run", { state: { message: "Test request" } });
     setResponse(result);
   };
 
