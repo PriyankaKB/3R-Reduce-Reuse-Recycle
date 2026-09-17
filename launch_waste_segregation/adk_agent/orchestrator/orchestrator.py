@@ -70,6 +70,30 @@ class WasteStreamPayload(BaseModel):
     hmi_telemetry_payload: str = ""
     bigquery_commit_success: bool = False
 
+# 1. Keep your original payload
+class WasteStreamPayload(BaseModel):
+    batch_id: str
+    image_gcs_uri: str
+    material_category: str = "UNKNOWN"
+    target_bin_id: str = "NONE"
+    robot_execution_matrix: str = "PENDING"
+    hmi_telemetry_payload: str = ""
+    bigquery_commit_success: bool = False
+
+# 2. Add a wrapper class that expects "state"
+class AgentRunRequest(BaseModel):
+    state: WasteStreamPayload
+
+# 3. Update your FastAPI route to expect AgentRunRequest
+@app.post("/run") # (or whatever your agent endpoint is named)
+def run_agent_workflow(payload: AgentRunRequest):
+    # Access the payload through the .state field
+    state_payload = payload.state
+    
+    # Example: print(state_payload.batch_id)
+    # ... execute your workflow ...
+
+
 # Fetch our local internal GKE CoreDNS target mapping addresses
 SEGREGATION_URL = os.getenv("SEGREGATION_AGENT_URL", "http://adk-segregation-service:8080/process")
 ROBOTIC_URL = os.getenv("ROBOTIC_ARM_AGENT_URL", "http://adk-robotic-service:8081/process")
@@ -156,15 +180,19 @@ async def trigger_conveyor_sorting_loop(payload: dict):
         session_id = str(uuid.uuid4())  # Generate a unique session ID
         user_id = "user_1"
 
-        validated = WasteStreamPayload(**payload)
+        # 1. Parse and validate the incoming nested payload
+        validated = AgentRunRequest(**payload)
         logger.info("Received payload: %s", validated.dict())
+        
+        # 2. Extract and unwrap the flat WasteStreamPayload dict
+        flat_state_dict = validated.state.dict() # or validated.state.model_dump() in Pydantic v2
         
         # Create a session using "adk_segregation_app"
         await session_service.create_session(
-            app_name="adk_segregation_app", # <-- Updated
+            app_name="adk_segregation_app", 
             user_id=user_id,
             session_id=session_id,
-            state=validated.dict()
+            state=flat_state_dict  # <--- FIX: Pass the unwrapped, flat dictionary here
         )
         
         # Execute the workflow
@@ -176,11 +204,12 @@ async def trigger_conveyor_sorting_loop(payload: dict):
             
         # Retrieve the final mutated state from the session
         session = await session_service.get_session(
-            app_name="adk_segregation_app", # <-- Updated
+            app_name="adk_segregation_app", 
             user_id=user_id,
             session_id=session_id
         )
         return {"status": "ok", "payload": session.state}
+
     
         
     except Exception as e:
