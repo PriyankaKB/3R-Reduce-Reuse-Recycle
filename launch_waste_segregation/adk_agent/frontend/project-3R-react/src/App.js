@@ -13,18 +13,20 @@ function App() {
   const [response, setResponse] = useState(null);
   const [imageGcsUri, setImageGcsUri] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [bucketName, setBucketName] = useState("");
 
-    // 1. Fetch current environment variable value on mount
+  // Fetch the dynamic configuration on app load
   useEffect(() => {
     fetch("/api/config")
       .then((res) => res.json())
       .then((data) => {
+        setBucketName(data.bucket_name);
         setImageGcsUri(data.image_gcs_uri);
       })
       .catch((err) => console.error("Error loading config:", err));
   }, []);
 
-    // 2. Synchronize the UI state to the Server's OS environment variables
+  // Sync the React state to the server-side OS environment variable
   const handleSaveToEnvironment = async () => {
     try {
       const res = await fetch("/api/config", {
@@ -41,6 +43,7 @@ function App() {
       alert("Error saving environment variable: " + err.message);
     }
   };
+
 
     const handleClick = async () => {
     if (!imageGcsUri.startsWith("gs://")) {
@@ -96,7 +99,7 @@ return (
                       type="text"
                       value={imageGcsUri}
                       onChange={(e) => setImageGcsUri(e.target.value)}
-                      placeholder={`e.g., gs://${bucketName || "your-bucket"}/path/to/image.jpg`}
+                      placeholder={`gs://${bucketName}/final_waste_dataset/paper/Paper_1.jpg`}
                       style={{
                         flex: 1,
                         padding: "12px",

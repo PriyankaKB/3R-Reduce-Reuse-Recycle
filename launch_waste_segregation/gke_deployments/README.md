@@ -25,7 +25,7 @@ DOCKER_REPO="project-3r-repo"
 KSA_NAME="project-3r-gke-sa"
 K8S_NAMESPACE="default" # Change if using a custom namespace
 MODEL="gemini-2.5-flash"
-IMAGE_GCS_URI=f"gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"
+IMAGE_GCS_URI="gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"
 
 ```
 #### Create the Environment File
