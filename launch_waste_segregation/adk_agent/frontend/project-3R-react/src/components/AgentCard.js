@@ -4,7 +4,6 @@ import { callAgent } from "../api";
 
 export default function AgentCard({ agent, imageGcsUri, onSaveEnv }) {
   const [response, setResponse] = useState(null);
-  const [imageGcsUri, setImageGcsUri] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
 
   const handleClick = async () => {
