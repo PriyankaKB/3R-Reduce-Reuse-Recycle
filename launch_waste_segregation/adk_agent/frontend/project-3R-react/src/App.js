@@ -10,6 +10,47 @@ function App() {
     "adk_smart_hmi_app",
     "adk_dispatch_app",
   ];
+  const [response, setResponse] = useState(null);
+  const [imageGcsUri, setImageGcsUri] = useState("");
+  const [statusMessage, setStatusMessage] = useState("");
+
+    // 1. Fetch current environment variable value on mount
+  useEffect(() => {
+    fetch("/api/config")
+      .then((res) => res.json())
+      .then((data) => {
+        setImageGcsUri(data.image_gcs_uri);
+      })
+      .catch((err) => console.error("Error loading config:", err));
+  }, []);
+
+    // 2. Synchronize the UI state to the Server's OS environment variables
+  const handleSaveToEnvironment = async () => {
+    try {
+      const res = await fetch("/api/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image_gcs_uri: imageGcsUri.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Failed to update config");
+      
+      setStatusMessage("✓ Server-side environment variable updated!");
+      setTimeout(() => setStatusMessage(""), 4000);
+    } catch (err) {
+      alert("Error saving environment variable: " + err.message);
+    }
+  };
+
+    const handleClick = async () => {
+    if (!imageGcsUri.startsWith("gs://")) {
+      alert("Please enter a valid Google Cloud Storage URI starting with 'gs://'");
+      return;
+    }
+
+    // Automatically synchronize/save to environment before executing
+    await handleSaveToEnvironment();
+  };
 
 // Operational Real-time State Tracking
   const [activeTab, setActiveTab] = useState('hmi_control');
@@ -38,8 +79,59 @@ return (
         <div className="flex items-center space-x-3">
           <h1 className="text-xl font-bold tracking-wider text-emerald-400">♻️ PROJECT 3R // SMART HMI</h1>
           <p>Interact with your FastAPI agents via the orchestrator.</p>
+                <div style={{
+                  padding: "20px", 
+                  backgroundColor: "#f8f9fa", 
+                  borderRadius: "8px", 
+                  border: "1px solid #dadce0", 
+                  marginBottom: "30px"
+                }}>
+                  <h3 style={{ marginTop: 0 }}>Global Environment Configuration</h3>
+                  <label htmlFor="global-gcs-uri" style={{ display: "block", marginBottom: "8px", fontWeight: "bold" }}>
+                    Target Image GCS URI:
+                  </label>
+                  <div style={{ display: "flex", gap: "10px" }}>
+                    <input
+                      id="global-gcs-uri"
+                      type="text"
+                      value={imageGcsUri}
+                      onChange={(e) => setImageGcsUri(e.target.value)}
+                      placeholder={`e.g., gs://${bucketName || "your-bucket"}/path/to/image.jpg`}
+                      style={{
+                        flex: 1,
+                        padding: "12px",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc",
+                        fontSize: "14px"
+                      }}
+                    />
+                    <button 
+                        onClick={() => {
+                        handleSaveToEnvironment();
+                        handleClick();
+                      }}
+                      style={{
+                        padding: "12px 20px",
+                        backgroundColor: "#34a853",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        fontSize: "14px"
+                      }}
+                    >
+                      Save to Env
+                    </button>
+                  </div>
+                  {statusMessage && (
+                    <small style={{ color: "#34a853", display: "block", marginTop: "8px", fontWeight: "bold" }}>
+                      {statusMessage}
+                    </small>
+                  )}
+                </div>
                 {agents.map(agent => (
-        <AgentCard key={agent} agent={agent} />
+        <AgentCard key={agent} agent={agent} imageGcsUri={imageGcsUri} onSaveEnv={handleSaveToEnvironment} />
       ))}
         </div>
         <div className="flex space-x-2 bg-slate-900 p-1 rounded-lg border border-slate-800">

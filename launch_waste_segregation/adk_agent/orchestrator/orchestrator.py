@@ -13,6 +13,17 @@ from google.adk.sessions import InMemorySessionService
 # Load environment variables from .env file
 dotenv.load_dotenv()
 
+# 1. Strictly fetch the project ID. If missing, raise a configuration error.
+PROJECT_ID = os.environ.get("GOOGLE_CLOUD_PROJECT")
+if not PROJECT_ID:
+    raise RuntimeError("CRITICAL: GOOGLE_CLOUD_PROJECT environment variable is not set!")
+
+# 2. Fetch the bucket name. If not set, construct a generic bucket name dynamically 
+# using the active project ID variable. No hardcoded names allowed.
+GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET")
+if not GCS_BUCKET_NAME:
+    GCS_BUCKET_NAME = f"3r-autonoumous-waste-segregation-{PROJECT_ID}"
+
 # Configure logger once at app startup
 logging.basicConfig(
     level=logging.INFO,  # or DEBUG for more detail
@@ -105,6 +116,38 @@ runner = Runner(
     session_service=session_service,
 )
 
+# Default image URI for testing purposes; can be overridden by the frontend
+default_image_uri = f"gs://{GCS_BUCKET_NAME}/final_waste_dataset/paper/Paper_1.jpg"
+
+# 2. Get the app configuration from the environment variable
+@app.get("/api/config")
+def get_runtime_config():
+    # Return the validated backend variables directly to the frontend
+    return {
+        "bucket_name": GCS_BUCKET_NAME,
+        "project_id": PROJECT_ID,
+        "image_gcs_uri": os.environ.get("IMAGE_GCS_URI", default_image_uri),
+    }
+
+# 2. API to POST and dynamically write/set os.environ["IMAGE_GCS_URI"] from UI at runtime
+class ConfigUpdateRequest(BaseModel):
+    image_gcs_uri: str
+
+
+@app.post("/api/config")
+def update_config(payload: ConfigUpdateRequest):
+    uri = payload.image_gcs_uri.strip()
+    if not uri.startswith("gs://"):
+         raise HTTPException(status_code=400, detail="Invalid GCS URI. Must start with 'gs://'")
+    
+    # Strictly update the OS environment variable at runtime!
+    os.environ["IMAGE_GCS_URI"] = uri
+    return {
+        "message": "Server-side environment variable updated successfully!",
+        "IMAGE_GCS_URI": os.environ["IMAGE_GCS_URI"]
+    }
+
+
 # 2. Update your FastAPI POST endpoint to use the correct app_name
 @app.post("/adk_segregation_app/run")
 @app.post("/v1/pipeline/sort")
@@ -145,3 +188,5 @@ async def trigger_conveyor_sorting_loop(payload: dict):
             status_code=500, 
             detail=f"Conveyor pipeline workflow error: {str(e)}"
         )
+
+
