@@ -8,14 +8,13 @@ export default function AgentCard({ agent, imageGcsUri, onSaveEnv }) {
 
   const handleClick = async () => {
     const result = await callAgent(agent, "run", { 
-    state: {     
     batch_id: "1",
     image_gcs_uri: imageGcsUri.trim(),
     material_category: "PAPER",
     target_bin_id: "NONE",
     robot_execution_matrix: "PENDING",
     hmi_telemetry_payload: "",
-    bigquery_commit_success: false, } 
+    bigquery_commit_success: false, 
   });
     setResponse(result);
   };
