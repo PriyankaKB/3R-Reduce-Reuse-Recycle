@@ -12,7 +12,7 @@ from datetime import datetime
 dotenv.load_dotenv()
 
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
-MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
+MODEL = os.getenv('MODEL', 'gemini-3.5-flash')
 
 # Endpoints mapping across the GKE internal DNS service topology
 SEGREGATION_AGENT_URL = os.getenv("SEGREGATION_AGENT_URL", "http://adk-segregation-service:8080/process")

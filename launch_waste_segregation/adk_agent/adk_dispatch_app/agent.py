@@ -11,7 +11,7 @@ from google.cloud import bigquery
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
-MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
+MODEL = os.getenv('MODEL', 'gemini-3.5-flash')
 bq_client = bigquery.Client()
 
 # Internal GKE DNS URL for the Smart HMI Agent

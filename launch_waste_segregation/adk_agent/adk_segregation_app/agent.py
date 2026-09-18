@@ -19,7 +19,7 @@ import pandas as pd
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'my-gen-ai-sandbox-project1')
-MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
+MODEL = os.getenv('MODEL', 'gemini-3.5-flash')
 
 # Fetch downstream cluster internal CoreDNS URLs
 ROBOTIC_ARM_AGENT_URL = os.getenv("ROBOTIC_ARM_AGENT_URL", "http://adk-robotic-service:8081/process")

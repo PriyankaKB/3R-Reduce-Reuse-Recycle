@@ -10,7 +10,7 @@ from a2a.types import Message, AgentCard
 
 dotenv.load_dotenv()
 PROJECT_ID = os.getenv('GOOGLE_CLOUD_PROJECT', 'project_not_set')
-MODEL = os.getenv('MODEL', 'gemini-2.5-flash')
+MODEL = os.getenv('MODEL', 'gemini-3.5-flash')
 
 # Internal GKE DNS URLs for pipeline orchestration
 HMI_AGENT_URL = os.getenv("HMI_AGENT_URL", "http://adk-hmi-service:8082/process")

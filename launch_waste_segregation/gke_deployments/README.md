@@ -24,7 +24,7 @@ BUCKET_NAME="3r-autonoumous-waste-segregation-$PROJECT_ID"
 DOCKER_REPO="project-3r-repo"
 KSA_NAME="project-3r-gke-sa"
 K8S_NAMESPACE="default" # Change if using a custom namespace
-MODEL="gemini-2.5-flash"
+MODEL="gemini-3.5-flash"
 IMAGE_GCS_URI="gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"
 
 ```
@@ -38,7 +38,7 @@ DOCKER_REPO="project-3r-repo"
 KSA_NAME=$KSA_NAME
 K8S_NAMESPACE="default"
 SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
-MODEL="gemini-2.5-flash"
+MODEL="gemini-3.5-flash"
 EOF
 ```
 
@@ -185,7 +185,7 @@ PROJECT_ID=$PROJECT_ID
 PROJECT_NUMBER=$PROJECT_NUMBER
 KSA_NAME=$KSA_NAME
 SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
-MODEL="gemini-2.5-flash"
+MODEL="gemini-3.5-flash"
 EOF
 ```
 
@@ -544,7 +544,7 @@ image_part = types.Part.from_uri(
 
 # Pass it directly to Gemini
 response = ai_client.models.generate_content(
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     contents=[
         image_part,
         "Analyze this item on the waste segregation conveyor belt and output standard JSON routing data."

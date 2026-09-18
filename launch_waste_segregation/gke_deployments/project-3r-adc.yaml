@@ -67,7 +67,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
@@ -130,7 +130,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
@@ -193,7 +193,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
@@ -256,7 +256,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         ports:
@@ -319,7 +319,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         - name: SEGREGATION_AGENT_URL
@@ -384,7 +384,7 @@ spec:
         - name: GOOGLE_GENAI_USE_VERTEXAI
           value: "True"
         - name: GEMINI_MODEL
-          value: "gemini-2.5-flash"
+          value: "gemini-3.5-flash"
         - name: GCS_BUCKET
           value: "3r-autonoumous-waste-segregation-<your_cloud_project_name>"
         - name: SEGREGATION_AGENT_URL
