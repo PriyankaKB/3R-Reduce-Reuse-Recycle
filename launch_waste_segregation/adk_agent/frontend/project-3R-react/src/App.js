@@ -21,7 +21,16 @@ function App() {
       .then((res) => res.json())
       .then((data) => {
         setBucketName(data.bucket_name);
-        setImageGcsUri(data.image_gcs_uri);
+
+        // 1. Define your private default string to check against
+        const privateDefaultPath = "final_waste_dataset/paper/Paper_1.jpg";
+
+        // 2. Only populate the input box if the backend URI is a CUSTOM user-defined path
+        if (data.image_gcs_uri && !data.image_gcs_uri.includes(privateDefaultPath)) {
+          setImageGcsUri(data.image_gcs_uri); // Load custom path from env
+        } else {
+          setImageGcsUri(""); // Keep it empty (private default is active on server, but hidden in UI)
+        }
       })
       .catch((err) => console.error("Error loading config:", err));
   }, []);
@@ -99,7 +108,7 @@ return (
                       type="text"
                       value={imageGcsUri}
                       onChange={(e) => setImageGcsUri(e.target.value)}
-                      placeholder={`gs://${bucketName}/final_waste_dataset/paper/Paper_1.jpg`}
+                      placeholder={`gs://${bucketName || "your-bucket-name"}/path/to/image.jpg`}
                       style={{
                         flex: 1,
                         padding: "12px",

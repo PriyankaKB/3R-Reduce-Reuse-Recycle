@@ -20,7 +20,7 @@ if not PROJECT_ID:
 
 # 2. Fetch the bucket name. If not set, construct a generic bucket name dynamically 
 # using the active project ID variable. No hardcoded names allowed.
-GCS_BUCKET_NAME = os.environ.get("GCS_BUCKET")
+GCS_BUCKET_NAME = os.environ.get("BUCKET_NAME")
 if not GCS_BUCKET_NAME:
     GCS_BUCKET_NAME = f"3r-autonoumous-waste-segregation-{PROJECT_ID}"
 
@@ -146,12 +146,24 @@ default_image_uri = f"gs://{GCS_BUCKET_NAME}/final_waste_dataset/paper/Paper_1.j
 # 2. Get the app configuration from the environment variable
 @app.get("/api/config")
 def get_runtime_config():
-    # Return the validated backend variables directly to the frontend
-    return {
-        "bucket_name": GCS_BUCKET_NAME,
-        "project_id": PROJECT_ID,
-        "image_gcs_uri": os.environ.get("IMAGE_GCS_URI", default_image_uri),
-    }
+    # 1. Check if the user has set a CUSTOM environment variable
+    custom_uri = os.environ.get("IMAGE_GCS_URI")
+    
+    if custom_uri:
+        return {
+            "bucket_name": GCS_BUCKET_NAME,
+            "is_default": False,
+            "image_gcs_uri": custom_uri # Send custom URI to frontend
+        }
+    else:
+        # 2. If no custom URI is set, keep the default path 100% private on the server.
+        # Do NOT transmit the default path string over the network.
+        return {
+            "bucket_name": GCS_BUCKET_NAME,
+            "is_default": True,
+            "image_gcs_uri": "" # Send empty string to keep it private
+        }
+
 
 # 2. API to POST and dynamically write/set os.environ["IMAGE_GCS_URI"] from UI at runtime
 class ConfigUpdateRequest(BaseModel):
@@ -180,19 +192,25 @@ async def trigger_conveyor_sorting_loop(payload: dict):
         session_id = str(uuid.uuid4())  # Generate a unique session ID
         user_id = "user_1"
 
-        # 1. Parse and validate the incoming nested payload
+        # 1. Parse and validate the incoming nested payload from the UI
         validated = AgentRunRequest(**payload)
         logger.info("Received payload: %s", validated.dict())
         
-        # 2. Extract and unwrap the flat WasteStreamPayload dict
-        flat_state_dict = validated.state.dict() # or validated.state.model_dump() in Pydantic v2
+        # 2. Extract the flat WasteStreamPayload dict
+        flat_state_dict = validated.state.dict()
+        
+        # 3. Construct a combined state to satisfy BOTH flat validation and step parameter binding
+        combined_state = {
+            **flat_state_dict,
+            "state": flat_state_dict
+        }
         
         # Create a session using "adk_segregation_app"
         await session_service.create_session(
             app_name="adk_segregation_app", 
             user_id=user_id,
             session_id=session_id,
-            state=flat_state_dict  # <--- FIX: Pass the unwrapped, flat dictionary here
+            state=combined_state  # <--- Pass the combined state
         )
         
         # Execute the workflow
@@ -209,6 +227,7 @@ async def trigger_conveyor_sorting_loop(payload: dict):
             session_id=session_id
         )
         return {"status": "ok", "payload": session.state}
+
 
     
         
