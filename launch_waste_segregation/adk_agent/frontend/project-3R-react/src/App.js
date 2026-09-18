@@ -16,7 +16,11 @@ function App() {
   const [bucketName, setBucketName] = useState("");
 
   // Use the newly provisioned public LoadBalancer IP of the orchestrator
-const ORCHESTRATOR_URL = "http://<YOUR_NEW_ORCHESTRATOR_EXTERNAL_IP>:8084";
+// App.js & api.js
+const ORCHESTRATOR_URL = "/orchestrator";
+
+// Resolves to: http://35.184.121.82:3000/orchestrator/api/config
+fetch(`${ORCHESTRATOR_URL}/api/config`)
 
 useEffect(() => {
   fetch(`${ORCHESTRATOR_URL}/api/config`)
