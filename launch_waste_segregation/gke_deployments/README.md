@@ -43,6 +43,31 @@ IMAGE_GCS_URI="gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"
 EOF
 ```
 
+#####OR
+
+Create a .env and edit with nano editor in cloud shell
+
+```
+PROJECT_ID=$PROJECT_ID
+PROJECT_NUMBER=$PROJECT_NUMBER
+DOCKER_REPO="project-3r-repo"
+KSA_NAME=$KSA_NAME
+K8S_NAMESPACE="default"
+SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
+MODEL="gemini-3.5-flash"
+IMAGE_GCS_URI="gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"Paper_1.jpg"
+ORCHESTRATOR_URL="http://<your_orchestrator_service_ip>:8084"
+FRONTEND_URL="http://<your_frontend_service_ip>:3000"
+```
+After authentication and Setting up the environment:
+1. Build the respective container images.
+2. Deploy the applications along with security configurations and services (You can modify the default application deployment as desired - keep only frontend and orchestrator as public URI).
+3. Pass the respective environment variables after deployment:
+
+
+
+## Follow below steps for detailed stepwise deployments with proper configurations:
+
 ### Step 1: Bind your GKE Service Account to GCP IAM Roles
 #### Get your project ID
 ```
@@ -559,8 +584,23 @@ print(response.text)
 Apply this manifest using `kubectl apply -f project-3r-adc.yaml`. Your cluster is now fully compliant with your team's keyless security configuration.
 
 
+## Pass the required environment variables after deployment and 
 
+```
+  # 1. Automatically fetch the Orchestrator's Public LoadBalancer IP from GKE
+  export ORCHESTRATOR_IP=$(kubectl get svc adk-orchestrator-service -n default -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
 
+  # 2. Update the frontend deployment's environment variable with the new IP
+  kubectl set env deployment/adk-frontend REACT_APP_ORCHESTRATOR_URL="http://${ORCHESTRATOR_IP}:8084" -n default
+
+  # 3. Force GKE to rollout restart the frontend so Nginx rebuilds with the new environment variable
+  kubectl rollout restart deployment/adk-frontend -n default
+```
+Refer below commands:
+```
+kubectl set env deployment/adk-orchestrator FRONTEND_URL="http://<your_frontend_ip>:3000" -n default  
+kubectl set env deployment/adk-frontend REACT_APP_ORCHESTRATOR_URL="http://<your_orchestrator_ip>:8084" -n default  
+```
 
 
 *(Note: Replace `your-gcp-project-id` with your actual Google Cloud Project ID and change the `us-central1` or `my-docker-repo` naming parts if your regional configurations or repository names differ).*

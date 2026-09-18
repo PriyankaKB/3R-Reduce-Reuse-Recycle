@@ -14,5 +14,11 @@
 ## Multi-Agent Architecture 3R
 ![alt text](multi-agent-architecture-3R.png)
 
+
+# Refer: 
+launch_waste_segregation\gke_deployments\README.md
+launch_waste_segregation\README.md
+
+
 Work In Progress...🚧
 
