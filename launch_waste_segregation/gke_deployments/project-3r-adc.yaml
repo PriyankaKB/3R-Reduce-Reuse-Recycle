@@ -341,7 +341,7 @@ kind: Service
 metadata:
   name: adk-orchestrator-service
 spec:
-  type: ClusterIP
+  type: LoadBalancer  # Public Orchestrator Endpoint for External Access
   selector:
     app: adk-orchestrator
   ports:
