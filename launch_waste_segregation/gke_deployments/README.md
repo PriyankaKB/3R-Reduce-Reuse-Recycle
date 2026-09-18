@@ -39,6 +39,7 @@ KSA_NAME=$KSA_NAME
 K8S_NAMESPACE="default"
 SERVICE_ACCOUNT=${KSA_NAME}@${PROJECT_ID}.iam.gserviceaccount.com
 MODEL="gemini-3.5-flash"
+IMAGE_GCS_URI="gs://$BUCKET_NAME/final_waste_dataset/paper/Paper_1.jpg"
 EOF
 ```
 
