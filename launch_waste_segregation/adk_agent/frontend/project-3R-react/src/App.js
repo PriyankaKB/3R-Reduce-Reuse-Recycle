@@ -15,9 +15,26 @@ function App() {
   const [statusMessage, setStatusMessage] = useState("");
   const [bucketName, setBucketName] = useState("");
 
+  // Use the newly provisioned public LoadBalancer IP of the orchestrator
+const ORCHESTRATOR_URL = "http://<YOUR_NEW_ORCHESTRATOR_EXTERNAL_IP>:8084";
+
+useEffect(() => {
+  fetch(`${ORCHESTRATOR_URL}/api/config`)
+    .then((res) => res.json())
+    .then((data) => {
+      setBucketName(data.bucket_name);
+      if (data.is_default === false && data.image_gcs_uri) {
+        setImageGcsUri(data.image_gcs_uri);
+      } else {
+        setImageGcsUri("");
+      }
+    })
+    .catch((err) => console.error("Error loading config:", err));
+}, []);
+
   // Fetch the dynamic configuration on app load
   useEffect(() => {
-    fetch("/api/config")
+    fetch("/orchestrator/api/config")
       .then((res) => res.json())
       .then((data) => {
         setBucketName(data.bucket_name);
@@ -38,7 +55,7 @@ function App() {
   // Sync the React state to the server-side OS environment variable
   const handleSaveToEnvironment = async () => {
     try {
-      const res = await fetch("/api/config", {
+      const res = await fetch("/orchestrator/api/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image_gcs_uri: imageGcsUri.trim() }),
