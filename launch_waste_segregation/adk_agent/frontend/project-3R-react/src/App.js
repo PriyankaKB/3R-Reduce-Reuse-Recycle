@@ -16,7 +16,7 @@ function App() {
   const [bucketName, setBucketName] = useState("");
 
   const getOrchestratorUrl = () => {
-  const envUrl = window._env_?.ORCHESTRATOR_URL;
+  const envUrl = window._env_?.REACT_APP_ORCHESTRATOR_URL;
   
   // Check if the variable is defined and has been successfully replaced by Nginx
   if (envUrl && !envUrl.startsWith("$")) {
@@ -24,14 +24,14 @@ function App() {
   }
   
   // Fallback to build-time variable or standard localhost developer port
-  return process.env.ORCHESTRATOR_URL || "http://localhost:8084";
+  return process.env.REACT_APP_ORCHESTRATOR_URL || "http://localhost:8084";
 };
 
-  const ORCHESTRATOR_URL = getOrchestratorUrl();
+  const REACT_APP_ORCHESTRATOR_URL = getOrchestratorUrl();
 
   // Fetch the dynamic configuration on app load
   useEffect(() => {
-    fetch(`${ORCHESTRATOR_URL}/api/config`)
+    fetch(`${REACT_APP_ORCHESTRATOR_URL}/api/config`)
       .then((res) => res.json())
       .then((data) => {
         setBucketName(data.bucket_name);
@@ -47,12 +47,12 @@ function App() {
         }
       })
       .catch((err) => console.error("Error loading config:", err));
-  }, [ORCHESTRATOR_URL]);
+  }, [REACT_APP_ORCHESTRATOR_URL]);
 
   // Sync the React state to the server-side OS environment variable
   const handleSaveToEnvironment = async () => {
     try {
-      const res = await fetch(`${ORCHESTRATOR_URL}/api/config`, {
+      const res = await fetch(`${REACT_APP_ORCHESTRATOR_URL}/api/config`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image_gcs_uri: imageGcsUri.trim() }),
